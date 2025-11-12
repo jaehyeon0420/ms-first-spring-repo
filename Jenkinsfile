@@ -3,8 +3,8 @@ pipeline {
       
     environment {
         APP_NAME = "msai-firstpjt-spring-app"
-        ACR_NAME = "backprojectAcr"
-        ACR_LOGIN_SERVER = "backprojectAcr.azurecr.io"
+        ACR_NAME = "backprojectacr"
+        ACR_LOGIN_SERVER = "backprojectacr.azurecr.io"
     }
 
     stages {
