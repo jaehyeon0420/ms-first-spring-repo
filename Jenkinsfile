@@ -45,10 +45,7 @@ pipeline {
                 ]) {
                     sh """
                     echo Azure login...
-                    az login --service-principal ^
-                      -u %AZURE_APP_ID% ^
-                      -p %AZURE_PASSWORD% ^
-                      --tenant %AZURE_TENANT_ID%
+                    az login --service-principal -u %AZURE_APP_ID% -p %AZURE_PASSWORD% --tenant %AZURE_TENANT_ID%
 
                     echo Logging into ACR...
                     az acr login --name ${env.ACR_NAME}
