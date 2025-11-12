@@ -40,6 +40,12 @@ public class MemberController {
 	@Autowired
 	private FileUtils fileUtil;
 
+	//테스트
+	@GetMapping
+	@NoTokenCheck
+	public String test() {
+		return "hello";
+	}
 	
 	@PostMapping //등록 == POST
 	@NoTokenCheck //로그인 체크 X
@@ -75,6 +81,7 @@ public class MemberController {
 		
 	}
 	
+		
 	//아이디 중복체크
 	@GetMapping("/{memberId}/id-check")
 	@NoTokenCheck //로그인 체크 X
