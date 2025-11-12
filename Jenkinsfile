@@ -30,7 +30,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    IMAGE_TAG = "${env.ACR_LOGIN_SERVER}/${env.APP_NAME}:${env.BUILD_NUMBER}"
+                    def IMAGE_TAG = "${env.ACR_LOGIN_SERVER}/${env.APP_NAME}:${env.BUILD_NUMBER}"
                     sh "docker build -t ${IMAGE_TAG} ."
                 }
             }
