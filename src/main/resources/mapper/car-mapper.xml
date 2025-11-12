@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.academy.msai.mycar.model.dao.MycarDao">
+
+	<!-- 차 ID(시퀀스) 조회 -->
+	<select id="getCarId" resultType="string">
+	SELECT nextval('seq_car')
+	</select>
+	
+	<!-- 차량 정보 등록 -->
+	<insert id="insertCar" parameterType="Car">
+	insert into tbl_car
+		(
+		car_id,
+		car_no,
+		car_kind,
+		car_alias,
+		car_year,
+		member_id,
+		car_file_name,
+		car_file_path
+		)
+		values 
+		(
+		#{carId},
+		#{carNo},
+		#{carKind},
+		#{carAlias},
+		#{carYear},
+		#{memberId},
+		#{carFileName},
+		#{carFilePath}
+		)
+	</insert>
+	
+	<!-- 내 차 갯수 -->
+	<select id="selectCarCount" parameterType="string" resultType="_int">
+	select count(*) from tbl_car where member_id = #{_parameter}
+	</select>
+	
+	<!-- 내 차 리스트 조회 -->
+	<select id="selectCarList" parameterType="map" resultType="Car">
+	select car_id as carId,
+       	   car_no as carNo,
+       	   car_kind as carKind,
+       	   car_alias as carAlias,
+       	   car_year as carYear,
+       	   member_id as memberId,
+       	   car_file_name as carFileName,
+       	   car_file_path as carFilePath
+	  from (
+	       select ROW_NUMBER() OVER (ORDER BY car_id) rnum, a.*
+	         from (
+	               select car_id,
+	                	  car_no,
+	                	  car_kind,
+	                	  car_alias,
+	                	  car_year,
+	                	  member_id,
+	                	  car_file_name,
+	                	  car_file_path
+	                 from tbl_car
+	                where member_id = #{memberId}
+	              ) a
+	        ) a
+	 where a.rnum between #{pageInfo.start} and #{pageInfo.end}
+	</select>
+	
+	<!-- 내 차 전체 조회 -->
+	<select id="selectAllCarList" parameterType="string" resultType="Car">
+	select car_id as carId,
+       	   car_no as carNo,
+       	   car_kind as carKind,
+       	   car_alias as carAlias,
+       	   car_year as carYear
+      from tbl_car
+     where member_id = #{memberId}
+	</select>
+	
+	<!-- 파손 이미지 파일 번호(시퀀스) 조회 -->
+	<select id="getBrokenFileNo" resultType="string">
+	SELECT nextval('seq_broken_file')
+	</select>
+	
+	<!-- 파손 이미지 파일 등록 -->
+	<insert id="insertBrokenFile" parameterType="BrokenFile">
+	insert into tbl_broken_file
+		(
+		broken_file_no,
+		car_id,
+		broken_file_name,
+		broken_file_path
+		)
+		values
+		(
+		#{brokenFileNo},
+		#{carId},
+		#{brokenFileName},
+		#{brokenFilePath}
+		)
+	</insert>
+	
+	<!-- 견적 이력 정보 등록 -->
+	<insert id="insertEsimateHist" parameterType="map">
+	insert into tbl_estimate
+		(
+		estimate_id,
+		car_id,
+		repair_cost,
+		estimate_date,
+		broken_file_min,
+		broken_file_max
+		)
+		values 
+		(
+		nextval('seq_estimate'),
+		#{carId},
+		#{repairCost},
+		now(),
+		#{brokenFileMin},
+		#{brokenFileMax}
+		)
+	</insert>
+	
+	<!-- 견적 이력 갯수 조회 -->
+	<select id="selectEstiMateCount" parameterType="string">
+	select count(*)
+	  from tbl_estimate
+	 where car_id in (select car_id
+                        from tbl_car
+                       where member_id = #{_parameter})
+	</select>
+	
+	<!-- 견적 이력 조회 -->
+	<select id="selectEstiMateList" parameterType="map"  resultType="EstiMate">
+	select rnum,
+	       estimate_id as estimateId,
+           car_id as carId,
+           (select car_no from tbl_car z where z.car_id = car_id) carNo,
+		   (select car_alias from tbl_car z where z.car_id = car_id) carAlias,
+           repair_cost as repairCost,
+           TO_CHAR(estimate_date, 'YYYY-MM-DD HH24:MI:SS') as estimateDate,
+           broken_file_min as brokenFileMin,
+           broken_file_max as brokenFileMax
+	  from (
+	       select ROW_NUMBER() OVER (ORDER BY estimate_id) rnum, a.*
+	         from (
+	               select estimate_id,
+	                      car_id,
+	                      repair_cost,
+	                      estimate_date,
+	                      broken_file_min,
+	                      broken_file_max
+	                 from tbl_estimate
+	                where car_id in (select car_id
+                                       from tbl_car
+                                      where member_id = #{memberId})
+	              ) a
+	        ) a
+	 where a.rnum between #{pageInfo.start} and #{pageInfo.end}
+	</select>
+	
+	<!-- 견적 이력 1개에 대한 이미지 리스트 조회 -->
+	<select id="selectBrokenFileList" parameterType="map" resultType="BrokenFile">
+	select broken_file_no as brokenFileNo,
+	       car_id as carId,
+	       broken_file_name as brokenFileName,
+	       broken_file_path as brokenFilePath
+	  from tbl_broken_file
+	 where car_id = #{carId}
+	   and broken_file_no between #{brokenFileMin} and #{brokenFileMax}
+	</select>
+</mapper>

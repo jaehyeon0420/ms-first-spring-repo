@@ -68,4 +68,6 @@
 	delete tbl_member
 	 where member_id = #{memberId}
 	</delete>
+	
+		
 </mapper>

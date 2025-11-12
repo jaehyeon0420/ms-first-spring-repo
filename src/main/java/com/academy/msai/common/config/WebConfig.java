@@ -25,11 +25,8 @@ public class WebConfig implements WebMvcConfigurer{
 	//자원에 대한 접근 권한 부여
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/editor/**") //요청 URL
-		        .addResourceLocations("file:///" + uploadPath + "/editor/"); //연결할 경로
-		
-		registry.addResourceHandler("/board/**") //요청 URL
-        .addResourceLocations("file:///" + uploadPath + "/board/"); //연결할 경로
+		registry.addResourceHandler("/car/**") //요청 URL
+        .addResourceLocations("file:///" + uploadPath + "/car/"); //연결할 경로
 	}
 	
 		

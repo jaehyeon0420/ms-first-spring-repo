@@ -1,5 +1,7 @@
 package com.academy.msai.member.model.service;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,12 +11,17 @@ import com.academy.msai.common.util.JwtUtils;
 import com.academy.msai.member.model.dao.MemberDao;
 import com.academy.msai.member.model.dto.LoginMember;
 import com.academy.msai.member.model.dto.Member;
+import com.academy.msai.mycar.model.dao.MycarDao;
+import com.academy.msai.mycar.model.dto.Car;
 
 
 @Service
 public class MemberService {
 	@Autowired
 	private MemberDao memberDao;
+	
+	@Autowired
+	private MycarDao mycarDao;
 	
 	@Autowired
 	private BCryptPasswordEncoder encoder;
@@ -26,7 +33,27 @@ public class MemberService {
 	public int insertMember(Member member) {
 		String encodePw = encoder.encode(member.getMemberPw());
 		member.setMemberPw(encodePw);
-		return memberDao.insertMember(member);
+		
+		int result = memberDao.insertMember(member);
+		
+		ArrayList<Car> carList = member.getCarList(); 		
+		
+		for(int i=0; i<carList.size(); i++) {
+			//차 ID(시퀀스) 조회
+			String carId = mycarDao.getCarId();
+			
+			//차량정보에 차량 ID와 회원 아이디 세팅
+			carList.get(i).setCarId(carId);
+			carList.get(i).setMemberId(member.getMemberId());
+			
+			
+			//차량 정보 등록 후, 차량 이미지 정보 등록
+			mycarDao.insertCar(carList.get(i));
+			
+		}
+		
+		
+		return result;
 	}
 
 	public int idDuplChk(String memberId) {

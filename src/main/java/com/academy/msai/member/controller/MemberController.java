@@ -1,11 +1,15 @@
 package com.academy.msai.member.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,12 +17,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.academy.msai.common.annotation.NoTokenCheck;
 import com.academy.msai.common.model.dto.ResponseDTO;
+import com.academy.msai.common.util.FileUtils;
 import com.academy.msai.member.model.dto.LoginMember;
 import com.academy.msai.member.model.dto.Member;
 import com.academy.msai.member.model.service.MemberService;
+import com.academy.msai.mycar.model.dto.Car;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -29,15 +36,30 @@ public class MemberController {
 
 	@Autowired
 	private MemberService memberService;
+	
+	@Autowired
+	private FileUtils fileUtil;
 
 	
 	@PostMapping //등록 == POST
 	@NoTokenCheck //로그인 체크 X
-	public ResponseEntity<ResponseDTO> memberJoin(@RequestBody Member member){
+	public ResponseEntity<ResponseDTO> memberJoin(@ModelAttribute Member member,
+												@ModelAttribute MultipartFile [] carFiles){
 		//실패했을 때 응답 객체 초기 세팅
 		ResponseDTO res = new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입 중, 오류가 발생하였습니다.", false, "error");
 		
 		try {
+			//차량's 이미지 처리
+			ArrayList<Car> carList = member.getCarList();
+			
+			for(int i=0; i<carFiles.length; i++) {
+				String filePath = fileUtil.uploadFile(carFiles[i], "/car/");
+				
+				Car car = carList.get(i);
+				car.setCarFileName(carFiles[i].getOriginalFilename());
+				car.setCarFilePath(filePath);
+			}
+			
 			int result = memberService.insertMember(member);
 			
 			if(result > 0) {
