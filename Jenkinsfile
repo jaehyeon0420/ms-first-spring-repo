@@ -23,7 +23,7 @@ pipeline {
         stage('Build') {
             steps {
                 // Windows라면 bat, Linux라면 sh 사용
-                bat 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     IMAGE_TAG = "${env.ACR_LOGIN_SERVER}/${env.APP_NAME}:${env.BUILD_NUMBER}"
-                    bat "docker build -t ${IMAGE_TAG} ."
+                    sh "docker build -t ${IMAGE_TAG} ."
                 }
             }
         }
@@ -43,7 +43,7 @@ pipeline {
                     string(credentialsId: 'AZURE_PASSWORD', variable: 'AZURE_PASSWORD'),
                     string(credentialsId: 'AZURE_TENANT_ID', variable: 'AZURE_TENANT_ID')
                 ]) {
-                    bat """
+                    sh """
                     echo Azure login...
                     az login --service-principal ^
                       -u %AZURE_APP_ID% ^
