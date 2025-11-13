@@ -45,7 +45,7 @@ public class MycarService {
 	private String endpoint;
 
 	public HashMap<String, Object> selectCarList(int reqPage, String memberId) {
-		int viewCnt = 12;							//한 페이지당 게시물 수
+		int viewCnt = 10;							//한 페이지당 게시물 수
 		int pageNaviSize = 5;						//페이지 네비게이션 길이
 		int totalCount = dao.selectCarCount(memberId);	//전체 게시글 수
 		
@@ -142,7 +142,7 @@ public class MycarService {
 	}
 
 	public HashMap<String, Object> selectEstiMateList(int reqPage, String memberId) {
-		int viewCnt = 12;							//한 페이지당 게시물 수
+		int viewCnt = 10;							//한 페이지당 게시물 수
 		int pageNaviSize = 5;						//페이지 네비게이션 길이
 		int totalCount = dao.selectEstiMateCount(memberId);	//전체 게시글 수
 		
