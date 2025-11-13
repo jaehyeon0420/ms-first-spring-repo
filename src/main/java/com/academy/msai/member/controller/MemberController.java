@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -39,13 +40,14 @@ public class MemberController {
 	
 	@Autowired
 	private FileUtils fileUtil;
-
+	@Value("${spring.datasource.url}")
+	private String dbUrl;
 	//테스트
 	@GetMapping
 	@NoTokenCheck
 	public String test() {
 		String test = memberService.test();
-		return test;
+		return dbUrl+test;
 	}
 	
 	@PostMapping //등록 == POST
