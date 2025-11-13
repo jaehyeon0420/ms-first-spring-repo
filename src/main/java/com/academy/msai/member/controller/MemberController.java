@@ -36,7 +36,7 @@ public class MemberController {
 	
 	@Autowired
 	private FileUtils fileUtil;
-	
+	  
 	@PostMapping //등록 == POST
 	@NoTokenCheck //로그인 체크 X
 	public ResponseEntity<ResponseDTO> memberJoin(@ModelAttribute Member member,
