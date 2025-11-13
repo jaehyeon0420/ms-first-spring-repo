@@ -139,4 +139,8 @@ public class MemberService {
 		
 		return result;
 	}
+
+	public String test() {
+		return memberDao.test();
+	}
 }

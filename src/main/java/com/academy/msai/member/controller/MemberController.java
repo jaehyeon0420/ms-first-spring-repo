@@ -44,7 +44,8 @@ public class MemberController {
 	@GetMapping
 	@NoTokenCheck
 	public String test() {
-		return "hello";
+		String test = memberService.test();
+		return test;
 	}
 	
 	@PostMapping //등록 == POST

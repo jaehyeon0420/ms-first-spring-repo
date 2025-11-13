@@ -69,5 +69,9 @@
 	 where member_id = #{memberId}
 	</delete>
 	
-		
+	<select id="test" resultType="string">
+	select member_id
+	  from tbl_member
+	 where member_id = 'user0001'
+	</select>		
 </mapper>
