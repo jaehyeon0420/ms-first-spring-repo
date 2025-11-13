@@ -1,10 +1,8 @@
 package com.academy.msai.member.controller;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +25,6 @@ import com.academy.msai.member.model.dto.Member;
 import com.academy.msai.member.model.service.MemberService;
 import com.academy.msai.mycar.model.dto.Car;
 
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @CrossOrigin("*")
@@ -40,15 +36,6 @@ public class MemberController {
 	
 	@Autowired
 	private FileUtils fileUtil;
-	@Value("${spring.datasource.url}")
-	private String dbUrl;
-	//테스트
-	@GetMapping
-	@NoTokenCheck
-	public String test() {
-		String test = memberService.test();
-		return dbUrl+test;
-	}
 	
 	@PostMapping //등록 == POST
 	@NoTokenCheck //로그인 체크 X

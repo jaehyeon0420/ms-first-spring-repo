@@ -22,6 +22,5 @@ public interface MemberDao {
 
 	int deleteMember(String memberId);
 
-	String test();
 
 }
