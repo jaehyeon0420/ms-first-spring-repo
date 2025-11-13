@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.academy.msai.common.model.dto.ResponseDTO;
-import com.academy.msai.member.model.dto.Member;
 import com.academy.msai.mycar.model.dto.Car;
 import com.academy.msai.mycar.model.service.MycarService;
 
@@ -68,6 +67,9 @@ public class MycarController {
 		try {
 			
 			int reuslt = service.insertEsimateHist(carId, brokenFiles);
+			
+			//임시 코드
+			Thread.sleep(3000);
 			
 			if(reuslt > 0) {
 				res = new ResponseDTO(HttpStatus.OK, "수리비 견적 예측이 완료되었습니다.", true, "success");

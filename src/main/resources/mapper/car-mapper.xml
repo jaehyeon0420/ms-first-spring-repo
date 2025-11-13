@@ -15,7 +15,6 @@
 		car_no,
 		car_kind,
 		car_alias,
-		car_year,
 		member_id,
 		car_file_name,
 		car_file_path
@@ -26,7 +25,6 @@
 		#{carNo},
 		#{carKind},
 		#{carAlias},
-		#{carYear},
 		#{memberId},
 		#{carFileName},
 		#{carFilePath}
@@ -44,7 +42,6 @@
        	   car_no as carNo,
        	   car_kind as carKind,
        	   car_alias as carAlias,
-       	   car_year as carYear,
        	   member_id as memberId,
        	   car_file_name as carFileName,
        	   car_file_path as carFilePath
@@ -55,7 +52,6 @@
 	                	  car_no,
 	                	  car_kind,
 	                	  car_alias,
-	                	  car_year,
 	                	  member_id,
 	                	  car_file_name,
 	                	  car_file_path
@@ -71,8 +67,7 @@
 	select car_id as carId,
        	   car_no as carNo,
        	   car_kind as carKind,
-       	   car_alias as carAlias,
-       	   car_year as carYear
+       	   car_alias as carAlias
       from tbl_car
      where member_id = #{memberId}
 	</select>
