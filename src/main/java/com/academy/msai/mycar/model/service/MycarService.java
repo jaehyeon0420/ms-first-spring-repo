@@ -17,6 +17,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.academy.msai.common.model.dto.FastApiRes;
 import com.academy.msai.common.model.dto.PageInfo;
 import com.academy.msai.common.util.FileUtils;
 import com.academy.msai.common.util.PageUtil;
@@ -71,73 +72,92 @@ public class MycarService {
 		ArrayList<Car> carList = dao.selectAllCarList(memberId);
 		return carList;
 	}
-
+	
 	public int insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
 		//예상 수리비 견적 모델 호출(FastAPI)
-		/*
-        // 1️개 파일을 ByteArrayResource로 변환
-        Resource resource = new ByteArrayResource(brokenFiles[0].getBytes()) {
-            @Override
-            public String getFilename() {
-                return brokenFiles[0].getOriginalFilename();
-            }
-        };
-
-        // multipart/form-data 바디 구성
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", resource);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        
-        //응답 형식 Model 클래스 생성할 것
-        ApiResponse response = restTemplate.postForObject(endpoint, requestEntity, ApiResponse.class);
-        
-        if(response != null) {
-        	System.out.println(response.getStatus());
-        	System.out.println(response.getMessage());
-        }
-        */
 		
-		//파일 번호 시작 및 마지막 값, 차량ID 저장 Map
-		HashMap<String, String> paramMap = new HashMap<>();
-		paramMap.put("carId", carId);
-		paramMap.put("repairCost", "330000");
-		
-		//아래 코드는 response != null 하위로 옮길 것
-		for(int i=0; i<brokenFiles.length; i++) {
-			MultipartFile uploadBrokenFile = brokenFiles[i];
-			String filePath = "";
+		try {
+			// 여러개 파일 body에 추가
+			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 			
-			try {
-				//파손 이미지 업로드
-				filePath = fileUtil.uploadFile(uploadBrokenFile, "/car/broken/");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return 0;
+			//파일 번호 시작 및 마지막 값, 차량ID 저장 Map
+			HashMap<String, String> paramMap = new HashMap<>();
+			paramMap.put("carId", carId);
+			
+			//Spring boot -> FastAPI에, 서버에 저장된 파일명(20251114101331906_00123.png) 전달할 리스트
+			ArrayList<String> filePathList = new ArrayList<>();
+
+			
+			System.out.println("brokenFiles : " + brokenFiles.length);
+			//파손 이미지 갯수만큼, Spring 서버 업로드 -> DB(tbl_broken_file) INSERT -> FastAPI 전달할 body에 추가
+			for(int i=0; i<brokenFiles.length; i++) {
+				
+				MultipartFile uploadBrokenFile = brokenFiles[i];
+				String filePath = "";
+				
+				try {
+					//파손 이미지 업로드
+					filePath = fileUtil.uploadFile(uploadBrokenFile, "/car/broken/");
+					
+					//리스트에 서버 파일명 추가
+					filePathList.add(filePath);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return 0;
+				}
+				
+				//이미지 파일 번호
+				String brokenFileNo = dao.getBrokenFileNo();
+				
+				//시작 또는 마지막
+				if(i == 0) {
+					paramMap.put("brokenFileMin", brokenFileNo);
+					paramMap.put("brokenFileMax", brokenFileNo);
+				}else if(brokenFiles.length-1 == i) {
+					paramMap.put("brokenFileMax", brokenFileNo);
+				}
+				
+				BrokenFile brokenFile = new BrokenFile(brokenFileNo, carId, uploadBrokenFile.getOriginalFilename(), filePath);
+				
+				dao.insertBrokenFile(brokenFile);
+				
+				
+				
+			    Resource resource = new ByteArrayResource(uploadBrokenFile.getBytes()) {
+			        @Override
+			        public String getFilename() {
+			            return uploadBrokenFile.getOriginalFilename();
+			        }
+			    };
+			    body.add("files", resource);   // ← key 이름을 files 로!
 			}
 			
-			//이미지 파일 번호
-			String brokenFileNo = dao.getBrokenFileNo();
 			
-			//시작 또는 마지막
-			if(i == 0) {
-				paramMap.put("brokenFileMin", brokenFileNo);
-				paramMap.put("brokenFileMax", brokenFileNo);
-			}else if(brokenFiles.length-1 == i) {
-				paramMap.put("brokenFileMax", brokenFileNo);
-			}
-			
-			BrokenFile brokenFile = new BrokenFile(brokenFileNo, carId, uploadBrokenFile.getOriginalFilename(), filePath);
-			
-			dao.insertBrokenFile(brokenFile);
-			
+			body.add("filePathList", filePathList);
+	
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+	
+	        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+	        
+	        //응답 형식 Model 클래스 생성할 것
+	        FastApiRes response = restTemplate.postForObject(endpoint+"/mycar/estimate", requestEntity, FastApiRes.class);
+	        
+	        if(response != null) {
+	        	System.out.println(response.getStatus());
+	        	System.out.println(response.getMessage());
+	        }
+	        
+	        // 견적 이력 저장
+	        return dao.insertEsimateHist(paramMap);
+	        
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		return dao.insertEsimateHist(paramMap);
+		return 0;
 		
 	}
 

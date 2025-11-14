@@ -68,7 +68,7 @@ public class MycarController {
 			
 			int reuslt = service.insertEsimateHist(carId, brokenFiles);
 			
-			//임시 코드
+			//로딩 화면을 보여주기 위한 딜레이
 			Thread.sleep(3000);
 			
 			if(reuslt > 0) {
