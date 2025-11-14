@@ -145,8 +145,10 @@ public class MycarService {
 	        FastApiRes response = restTemplate.postForObject(endpoint+"/mycar/estimate", requestEntity, FastApiRes.class);
 	        
 	        if(response != null) {
-	        	System.out.println(response.getStatus());
-	        	System.out.println(response.getMessage());
+	        	System.out.println(response.getBreakage());
+	        	System.out.println(response.getCrushed());
+	        	System.out.println(response.getScratched());
+	        	System.out.println(response.getSeparate());
 	        }
 	        
 	        // 견적 이력 저장

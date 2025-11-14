@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class FastApiRes {
 	
-	private String status;
-	private String message;
+	private String breakage;
+	private String crushed;
+	private String scratched;
+	private String separate;
 }
