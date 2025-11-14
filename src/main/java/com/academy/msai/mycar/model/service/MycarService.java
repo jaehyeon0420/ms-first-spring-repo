@@ -73,7 +73,7 @@ public class MycarService {
 		return carList;
 	}
 	
-	public int insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
+	public FastApiRes insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
 		//예상 수리비 견적 모델 호출(FastAPI)
 		
 		try {
@@ -145,21 +145,19 @@ public class MycarService {
 	        FastApiRes response = restTemplate.postForObject(endpoint+"/mycar/estimate", requestEntity, FastApiRes.class);
 	        
 	        if(response != null) {
-	        	System.out.println(response.getBreakage());
-	        	System.out.println(response.getCrushed());
-	        	System.out.println(response.getScratched());
-	        	System.out.println(response.getSeparate());
+	        	//견적 이력 저장
+	        	if(dao.insertEsimateHist(paramMap) > 0) {
+	        		return response;
+	        	}
 	        }
 	        
-	        // 견적 이력 저장
-	        return dao.insertEsimateHist(paramMap);
 	        
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return 0;
+		return null;
 		
 	}
 

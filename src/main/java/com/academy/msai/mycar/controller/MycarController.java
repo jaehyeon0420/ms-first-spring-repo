@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.academy.msai.common.model.dto.FastApiRes;
 import com.academy.msai.common.model.dto.ResponseDTO;
 import com.academy.msai.mycar.model.dto.Car;
 import com.academy.msai.mycar.model.service.MycarService;
@@ -66,15 +67,15 @@ public class MycarController {
 		
 		try {
 			
-			int reuslt = service.insertEsimateHist(carId, brokenFiles);
+			FastApiRes response = service.insertEsimateHist(carId, brokenFiles);
 			
 			//로딩 화면을 보여주기 위한 딜레이
 			Thread.sleep(3000);
 			
-			if(reuslt > 0) {
-				res = new ResponseDTO(HttpStatus.OK, "수리비 견적 예측이 완료되었습니다.", true, "success");
+			if(response != null) {
+				res = new ResponseDTO(HttpStatus.OK, "수리비 견적 예측이 완료되었습니다.", response, "success");
 			}else {
-				res = new ResponseDTO(HttpStatus.OK, "견적 요청 중, 오류가 발생하였습니다.", false, "warning");
+				res = new ResponseDTO(HttpStatus.OK, "견적 요청 중, 오류가 발생하였습니다.", null, "warning");
 			}
 			
 			
