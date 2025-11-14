@@ -104,7 +104,7 @@ public class MycarService {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					return 0;
+					return null;
 				}
 				
 				//이미지 파일 번호
