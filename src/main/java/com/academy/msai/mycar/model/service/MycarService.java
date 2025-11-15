@@ -1,16 +1,26 @@
 package com.academy.msai.mycar.model.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +36,8 @@ import com.academy.msai.mycar.model.dao.MycarDao;
 import com.academy.msai.mycar.model.dto.BrokenFile;
 import com.academy.msai.mycar.model.dto.Car;
 import com.academy.msai.mycar.model.dto.EstiMate;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class MycarService {
@@ -44,6 +56,9 @@ public class MycarService {
 	
 	@Value("${fastapi.endpoint}")
 	private String endpoint;
+	
+	@Value("${file.uploadPath}")
+	private String uploadPath;
 
 	public HashMap<String, Object> selectCarList(int reqPage, String memberId) {
 		int viewCnt = 10;							//한 페이지당 게시물 수
@@ -73,7 +88,7 @@ public class MycarService {
 		return carList;
 	}
 	
-	public FastApiRes insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
+	public List<FastApiRes> insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
 		//예상 수리비 견적 모델 호출(FastAPI)
 		
 		try {
@@ -88,7 +103,7 @@ public class MycarService {
 			ArrayList<String> filePathList = new ArrayList<>();
 
 			
-			System.out.println("brokenFiles : " + brokenFiles.length);
+			
 			//파손 이미지 갯수만큼, Spring 서버 업로드 -> DB(tbl_broken_file) INSERT -> FastAPI 전달할 body에 추가
 			for(int i=0; i<brokenFiles.length; i++) {
 				
@@ -110,7 +125,7 @@ public class MycarService {
 				//이미지 파일 번호
 				String brokenFileNo = dao.getBrokenFileNo();
 				
-				//시작 또는 마지막
+				//DB 저장을 위한, 시작 또는 마지막 파일 번호
 				if(i == 0) {
 					paramMap.put("brokenFileMin", brokenFileNo);
 					paramMap.put("brokenFileMax", brokenFileNo);
@@ -118,10 +133,10 @@ public class MycarService {
 					paramMap.put("brokenFileMax", brokenFileNo);
 				}
 				
+				
+				//tbl_borken_file - Insert
 				BrokenFile brokenFile = new BrokenFile(brokenFileNo, carId, uploadBrokenFile.getOriginalFilename(), filePath);
-				
 				dao.insertBrokenFile(brokenFile);
-				
 				
 				
 			    Resource resource = new ByteArrayResource(uploadBrokenFile.getBytes()) {
@@ -141,16 +156,61 @@ public class MycarService {
 	
 	        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 	        
-	        //응답 형식 Model 클래스 생성할 것
-	        FastApiRes response = restTemplate.postForObject(endpoint+"/mycar/estimate", requestEntity, FastApiRes.class);
+	        /*
+	        ResponseEntity<List<FastApiRes>> response = restTemplate.exchange(
+	        		endpoint+"/mycar/estimate",
+	                org.springframework.http.HttpMethod.POST,
+	                requestEntity,
+	                new ParameterizedTypeReference<List<FastApiRes>>() {}
+	            );
+	        */
+	        ResponseEntity<byte[]> response = restTemplate.exchange(
+	        		endpoint+"/mycar/estimate",
+	        		org.springframework.http.HttpMethod.POST,
+	        		requestEntity,
+	                byte[].class
+	        );
+	        byte[] zipBytes = response.getBody();
+
+	        // ZIP 파일 Parse
+	        ByteArrayInputStream bis = new ByteArrayInputStream(zipBytes);
+	        ZipInputStream zis = new ZipInputStream(bis);
+	        ZipEntry entry;
+	        
+	        List<FastApiRes> fastApiList = null;
+	        while ((entry = zis.getNextEntry()) != null) {
+	        	
+	        	// Json List
+	            if (entry.getName().equals("result.json")) {
+	                String jsonStr = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+	                
+	                //db에 Text로 저장
+	                paramMap.put("jsonStr", jsonStr);
+	                
+	                ObjectMapper mapper = new ObjectMapper();
+	                fastApiList  = mapper.readValue(
+	                        jsonStr,
+	                        new TypeReference<List<FastApiRes>>() {}
+	                );
+
+	            }
+	            
+	            // jpg
+	            if (entry.getName().endsWith("image.jpg")) {
+	                FileOutputStream fos = new FileOutputStream(uploadPath + "/car/broken/result/" + entry.getName());
+	                fos.write(zis.readAllBytes());
+	                fos.close();
+	            }
+	        }
+
+	        zis.close();     
 	        
 	        if(response != null) {
-	        	//견적 이력 저장
+	        	//tbl_estimate - Insert
 	        	if(dao.insertEsimateHist(paramMap) > 0) {
-	        		return response;
+	        		return fastApiList ;
 	        	}
 	        }
-	        
 	        
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

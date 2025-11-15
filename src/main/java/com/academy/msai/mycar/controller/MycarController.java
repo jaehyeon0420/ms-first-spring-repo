@@ -2,6 +2,7 @@ package com.academy.msai.mycar.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -67,10 +68,10 @@ public class MycarController {
 		
 		try {
 			
-			FastApiRes response = service.insertEsimateHist(carId, brokenFiles);
+			List<FastApiRes> response = service.insertEsimateHist(carId, brokenFiles);
 			
 			//로딩 화면을 보여주기 위한 딜레이
-			Thread.sleep(3000);
+			//Thread.sleep(3000);
 			
 			if(response != null) {
 				res = new ResponseDTO(HttpStatus.OK, "수리비 견적 예측이 완료되었습니다.", response, "success");

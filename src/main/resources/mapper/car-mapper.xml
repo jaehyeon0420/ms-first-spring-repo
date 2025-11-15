@@ -101,7 +101,7 @@
 		(
 		estimate_id,
 		car_id,
-		repair_cost,
+		json_str,
 		estimate_date,
 		broken_file_min,
 		broken_file_max
@@ -110,7 +110,7 @@
 		(
 		nextval('seq_estimate'),
 		#{carId},
-		#{repairCost},
+		#{jsonStr},
 		now(),
 		#{brokenFileMin},
 		#{brokenFileMax}
@@ -131,18 +131,27 @@
 	select rnum,
 	       estimate_id as estimateId,
            car_id as carId,
+           json_str as jsonStr,
            (select car_no from tbl_car z where z.car_id = a.car_id) carNo,
 		   (select car_alias from tbl_car z where z.car_id = a.car_id) carAlias,
-           repair_cost as repairCost,
            TO_CHAR(estimate_date, 'YYYY-MM-DD HH24:MI:SS') as estimateDate,
            broken_file_min as brokenFileMin,
-           broken_file_max as brokenFileMax
+           broken_file_max as brokenFileMax,
+           (
+		        SELECT SUM((elem->'summary'->>'total_recommended_cost')::bigint)
+		        FROM jsonb_array_elements(
+		             CASE 
+		                 WHEN LEFT(a.json_str,1) = '[' THEN a.json_str::jsonb
+		                 ELSE ('[' || a.json_str || ']')::jsonb
+		             END
+		        ) AS elem
+		    ) AS totalRecommendedCostSum
 	  from (
-	       select ROW_NUMBER() OVER (ORDER BY estimate_id) rnum, a.*
+	       select ROW_NUMBER() OVER (ORDER BY estimate_date desc, estimate_id desc) rnum, a.*
 	         from (
 	               select estimate_id,
 	                      car_id,
-	                      repair_cost,
+	                      json_str,
 	                      estimate_date,
 	                      broken_file_min,
 	                      broken_file_max

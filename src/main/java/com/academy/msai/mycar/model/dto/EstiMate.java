@@ -16,10 +16,11 @@ public class EstiMate {
 	private String carId;
 	private String carNo;
 	private String carAlias;
-	private String repairCost;
+	private String jsonStr;
 	private String estimateDate;
 	private String brokenFileMin;
 	private String brokenFileMax;
+	private String totalRecommendedCostSum;
 	
 	private ArrayList<BrokenFile> brokenFileList;
 	
