@@ -88,7 +88,7 @@ public class MemberController {
 		
 		return new ResponseEntity<ResponseDTO>(res, res.getHttpStatus());
 	}
-	
+	                                                  
 	@PostMapping("/login")
 	@NoTokenCheck
 	public ResponseEntity<ResponseDTO> memberLogin(@RequestBody Member member){
