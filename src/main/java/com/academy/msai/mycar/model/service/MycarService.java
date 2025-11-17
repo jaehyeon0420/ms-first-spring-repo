@@ -87,7 +87,7 @@ public class MycarService {
 		ArrayList<Car> carList = dao.selectAllCarList(memberId);
 		return carList;
 	}
-	
+		
 	public List<FastApiRes> insertEsimateHist(String carId, MultipartFile[] brokenFiles) {
 		//예상 수리비 견적 모델 호출(FastAPI)
 		
@@ -176,10 +176,10 @@ public class MycarService {
 	        ByteArrayInputStream bis = new ByteArrayInputStream(zipBytes);
 	        ZipInputStream zis = new ZipInputStream(bis);
 	        ZipEntry entry;
-	        
+
 	        List<FastApiRes> fastApiList = null;
 	        while ((entry = zis.getNextEntry()) != null) {
-	        	
+
 	        	// Json List
 	            if (entry.getName().equals("result.json")) {
 	                String jsonStr = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
