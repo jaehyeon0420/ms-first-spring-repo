@@ -19,8 +19,11 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -38,6 +41,8 @@ import com.academy.msai.mycar.model.dto.Car;
 import com.academy.msai.mycar.model.dto.EstiMate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class MycarService {
@@ -59,6 +64,9 @@ public class MycarService {
 	
 	@Value("${file.uploadPath}")
 	private String uploadPath;
+	
+	@Autowired
+    private JavaMailSender mailSender;
 
 	public HashMap<String, Object> selectCarList(int reqPage, String memberId) {
 		int viewCnt = 10;							//한 페이지당 게시물 수
@@ -253,6 +261,27 @@ public class MycarService {
 		resultMap.put("pageInfo", pageInfo);
 		
 		return resultMap;
+	}
+
+	public boolean sendEmailEstimate(String email, MultipartFile pdfFile) {
+		try {
+			
+	        MimeMessage message = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+	        
+	        helper.setFrom("qowo0420@naver.com");
+	        helper.setTo(email);
+	        helper.setSubject("차량 수리 견적서");
+	        helper.setText("");
+	        helper.addAttachment(pdfFile.getOriginalFilename(), new ByteArrayResource(pdfFile.getBytes()));
+
+	        mailSender.send(message);
+
+	        return true;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
 	

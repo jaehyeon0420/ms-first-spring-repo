@@ -87,6 +87,32 @@ public class MycarController {
 		return new ResponseEntity<ResponseDTO>(res, res.getHttpStatus());
 	}
 	
+	@PostMapping("/send-email")
+	public ResponseEntity<?> sendEmail(@RequestParam("email") String email, @RequestParam("pdfFile") MultipartFile pdfFile) {
+		
+		ResponseDTO res = new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송 중, 오류가 발생하였습니다.", false, "error");
+		
+		try {
+			
+			boolean result = service.sendEmailEstimate(email, pdfFile);
+			
+			
+			if(result) {
+				res = new ResponseDTO(HttpStatus.OK, "입력하신 이메일로 전송되었습니다.", result, "success");
+			}else {
+				res = new ResponseDTO(HttpStatus.OK, "이메일 전송 중, 오류가 발생하였습니다.", result, "warning");
+			}
+			
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return new ResponseEntity<ResponseDTO>(res, res.getHttpStatus());
+			
+	    
+	}
+	
 	//견적 이력 조회(페이징)
 	@GetMapping("/estimate")
 	public ResponseEntity<ResponseDTO> getEstiMateList(@RequestParam int reqPage, @RequestParam String memberId) {
