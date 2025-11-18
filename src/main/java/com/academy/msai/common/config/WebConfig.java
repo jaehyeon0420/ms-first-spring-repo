@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -29,6 +30,12 @@ public class WebConfig implements WebMvcConfigurer{
         .addResourceLocations("file:///" + uploadPath + "/car/"); //연결할 경로
 	}
 	
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+	    registry.addMapping("/car/**")   // static 리소스 경로
+	            .allowedOrigins("*")     // 모든 출처 허용
+	            .allowedMethods("GET", "POST");
+	}
 		
 	@Bean //Ioc 컨테이너에 Bean으로 등록
 	public FilterRegistrationBean<Filter> EncodingFilter() {
